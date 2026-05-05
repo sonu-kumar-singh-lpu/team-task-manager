@@ -3,7 +3,7 @@
   Full-Stack Web Application
 ================================================================================
 
-LIVE URL:      https://your-app.up.railway.app  (update after deploy)
+LIVE URL:      https://team-task-manager-production-59d9.up.railway.app
 GITHUB REPO:   https://github.com/yourusername/team-task-manager
 
 --------------------------------------------------------------------------------
