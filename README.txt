@@ -11,7 +11,8 @@ OVERVIEW
 --------------------------------------------------------------------------------
 
 TaskFlow is a full-stack team task management app where users can create
-projects, assign tasks, and track progress with role-based access control.
+projects, assign tasks, track progress with role-based access control,
+and visualize performance through a dedicated Analytics dashboard.
 
 --------------------------------------------------------------------------------
 TECH STACK
@@ -21,6 +22,7 @@ Frontend:
   - React 18 (Vite)
   - React Router v6
   - Axios for HTTP requests
+  - Recharts for data visualization
   - date-fns for date formatting
 
 Backend:
@@ -45,6 +47,7 @@ Authentication:
   - Signup with name, email, password, role (admin/member)
   - Login with JWT token (7-day expiry)
   - Protected routes with auto-redirect
+  - Auto-logout on token expiry
 
 Role-Based Access Control (RBAC):
   - Global roles: Admin, Member
@@ -55,8 +58,8 @@ Role-Based Access Control (RBAC):
 Projects:
   - Create, view, update (name, description, status), delete
   - Status: active / archived / completed
-  - Add/remove team members with email
-  - Member roles per project
+  - Add/remove team members by email
+  - Member roles per project (admin/member)
 
 Tasks:
   - Create tasks inside projects
@@ -64,20 +67,31 @@ Tasks:
     status (todo/in_progress/review/done), assignee, due date
   - Filter by status, priority, assignee
   - Edit and delete tasks
+  - Overdue detection with visual alerts
 
 Dashboard:
   - Total projects, tasks, in-progress count
   - Overdue task count (highlighted in red)
   - Task status breakdown with progress bars
-  - List of overdue tasks
+  - List of overdue tasks with project names
 
 My Tasks page:
-  - See all tasks assigned to the current user across all projects
-  - Update task status inline
+  - All tasks assigned to the current user across all projects
+  - Update task status inline with dropdown
   - Overdue warning alerts
+
+Analytics page (unique feature):
+  - Overall completion rate with gradient progress bar
+  - Donut chart — task status breakdown with percentages
+  - Bar chart — tasks by priority (high/medium/low)
+  - Area chart — tasks created vs completed over last 14 days
+  - Per-project progress bars with overdue flags
+  - Team workload chart — in progress, done, overdue per member
+  - Summary stat cards with color-coded indicators
 
 Admin: Users page:
   - View all registered users
+  - Search users by name or email
   - Change user roles (admin / member)
 
 --------------------------------------------------------------------------------
@@ -121,6 +135,9 @@ Tasks:
   GET    /api/tasks/my
   GET    /api/tasks/dashboard
 
+Analytics:
+  GET /api/analytics
+
 Health:
   GET /health
 
@@ -136,17 +153,22 @@ Prerequisites: Node.js 18+, PostgreSQL
 
 2. Set up backend environment
    cp backend/.env.example backend/.env
-   # Edit backend/.env with your local PostgreSQL credentials and JWT secret
+   Edit backend/.env with your PostgreSQL credentials and JWT secret
 
-3. Install dependencies
+3. Create the database
+   psql -U postgres
+   CREATE DATABASE taskmanager;
+   \q
+
+4. Install dependencies
    cd backend && npm install
    cd ../frontend && npm install
 
-4. Start development servers (two terminals)
+5. Start development servers (two terminals)
    Terminal 1: cd backend && npm run dev
    Terminal 2: cd frontend && npm run dev
 
-5. Open http://localhost:5173
+6. Open http://localhost:5173
 
 The database schema initializes automatically when the backend starts.
 
@@ -157,24 +179,20 @@ RAILWAY DEPLOYMENT
 1. Push code to GitHub
 
 2. Create a new Railway project
-   railway login
-   railway init
+   - Deploy from GitHub repo
 
-3. Add a PostgreSQL plugin in Railway dashboard
+3. Add PostgreSQL plugin in Railway dashboard
 
 4. Set environment variables in Railway:
    DATABASE_URL   = (auto-set by Railway PostgreSQL plugin)
    JWT_SECRET     = (generate a strong random string)
    NODE_ENV       = production
-   PORT           = (auto-set by Railway)
 
-5. Set build command in Railway:
+5. Set commands in Railway settings:
    Build:  npm run build
    Start:  npm start
 
-6. Deploy
-   git push origin main
-   # Railway auto-deploys on push
+6. Generate domain in Railway Settings -> Networking
 
 The app serves the React build as static files from Express in production,
 so only one Railway service is needed.
@@ -187,6 +205,7 @@ team-task-manager/
 ├── package.json              Root build scripts
 ├── railway.toml              Railway config
 ├── .gitignore
+├── README.txt
 ├── backend/
 │   ├── package.json
 │   ├── .env.example
@@ -201,7 +220,8 @@ team-task-manager/
 │       │   ├── authController.js
 │       │   ├── projectController.js
 │       │   ├── taskController.js
-│       │   └── userController.js
+│       │   ├── userController.js
+│       │   └── analyticsController.js
 │       └── routes/
 │           └── index.js      All API routes
 └── frontend/
@@ -225,6 +245,7 @@ team-task-manager/
             ├── ProjectsPage.jsx
             ├── ProjectDetailPage.jsx
             ├── TasksPage.jsx
+            ├── AnalyticsPage.jsx
             └── UsersPage.jsx
 
 --------------------------------------------------------------------------------
